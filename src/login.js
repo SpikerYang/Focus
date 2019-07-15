@@ -1,6 +1,5 @@
 import React from 'react';
 import { Segment, Input, Button } from 'semantic-ui-react'
-import App from './app'
 class Login extends React.Component {
     constructor(props) {
         super(props);
@@ -30,7 +29,10 @@ class Login extends React.Component {
         }).then(res => res.json()).then(
             data => {
                 console.log(data)
-                if(data.Status) window.alert('验证成功，欢迎登录');
+                if(data.Status) {
+                    window.alert('验证成功，欢迎登录')
+                    this.props.history.push('/Main');
+                }
                 else window.alert('验证失败，用户名或密码错误')
             }
         )
@@ -38,7 +40,6 @@ class Login extends React.Component {
     render() {
         return (
             <div style={{margin:'10px'}}>
-                <App /><br/>
                 <Segment style={{textAlign:'center'}}>
                     <Input
                         id='user'

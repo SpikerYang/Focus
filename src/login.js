@@ -28,10 +28,12 @@ class Login extends React.Component {
             body: send
         }).then(res => res.json()).then(
             data => {
-                console.log(data)
+                console.log(data.Cookie)
                 if(data.Status) {
                     window.alert('验证成功，欢迎登录')
-                    this.props.history.push('/Main');
+                    sessionStorage.setItem("userName", data.Cookie.userName);
+                    sessionStorage.setItem("cookie", data.Cookie.cookie);
+                    this.props.history.push('/Main',{cookie : data.Cookie});
                 }
                 else window.alert('验证失败，用户名或密码错误')
             }

@@ -1,13 +1,19 @@
 #!/usr/bin/python3.6 
 from flask import Flask, request,jsonify
+from flask_socketio import SocketIO, emit
 import time
 import string
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
+
+
 global Notification,KeyList,Valid
 ###########A list of dictionary, store cookie, messageId, App Icon, timeStamp, message###############
 ############status:0--new coming 1--have sent to web 2--have been read by user###############
 Notification = []
+note = []
 DeviceNotification = {}
 ###########A list of dictionary, store UserName, DeviceId, DeviceName and cookie###########
 AccountList = []
@@ -46,9 +52,24 @@ MESSAGEID = 1
 def after_request(resp):
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.headers['Access-Control-Allow-Headers'] ='Content-Type'
+    resp.headers['Access-Control-Allow-Methods'] = 'GET, POST'
     return resp
 
 app.after_request(after_request)
+
+
+@socketio.on('connect')
+def test_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected')
+
+@socketio.on('test')
+def handle_my_custom_event(message):
+    print('received json: ' + str(message))
+    emit('my response', message)
 
 
 @app.route('/login',methods=['POST'])
@@ -66,6 +87,14 @@ def webLogin():
          return jsonify({'Status': 1, 'Cookie': UserList[i]})
     
     return jsonify ({'Status': 0, 'Cookie': UserList[i]})
+
+@app.route('/main',methods=['POST'])
+def testList():
+    print(note)
+    return jsonify({'Status': 1, 'list': note})
+
+
+
 
 
 @app.route('/register',methods=['POST'])
@@ -301,7 +330,26 @@ if __name__ == '__main__':
             "msgId": "0"
         }
     )
+    note = [{
+                    'id':1,
+                    'note': '123',
+                    'device': 'iphone4',
+                    'app': 'qq',
+                },
+                {
+                    'id':2,
+                    'note': '12342',
+                    'device': 'iphone3',
+                    'app': 'wc',
+                },
+                {
+                    'id':3,
+                    'note': '123132',
+                    'device': 'iphone6',
+                    'app': 'qq',
+                }
+               ]
     print('Notification is %s ', Notification)
-
-    app.run(port=8080, debug=True)
+    print(note)
+    socketio.run(app, port=8080, debug=True)
 

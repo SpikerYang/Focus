@@ -5,24 +5,7 @@ class List extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            list: [{
-                    id:1,
-                    note: '123',
-                    device: 'iphone4',
-                    app: 'qq',
-                },
-                {
-                    id: 2,
-                    note: '1sef',
-                    device: 'iphone5',
-                    app: 'qq',
-                },
-                {
-                    id: 3,
-                    note: 'seed',
-                    device: 'iphone3',
-                    app: 'qq',
-                }]
+            list: this.props.list
         }
         this.add = this.add.bind(this);
     }

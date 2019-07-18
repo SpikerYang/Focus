@@ -1,56 +1,37 @@
 import React from 'react'
 import Card from './card'
-import {Button} from "semantic-ui-react";
+
+
+
 class List extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            appLimit: this.props.app,
             list: this.props.list
         }
-        this.add = this.add.bind(this);
     }
-    add() {
-        console.log(this.state.list);
-        let newList = this.state.list;
 
-        let newCard = {
-            id: 4,
-            note: 'seed',
-            device: 'iphone3',
-            app: 'qq',
-        }
-        newList.push(newCard);
-        console.log(newList);
-        this.setState({list: newList});
-    }
     render() {
+        const element = [];
+        this.state.list.forEach((card) => {
+                if (this.state.appLimit == card.app) {
+                    element.push(<Card key={card.id}
+                                    id={card.id}
+                                    note={card.note}
+                                    device={card.device}
+                                    app={card.app} />)
+                }
+            }
+        );
         return (
             <div style = {{
-                backgroundColor: "#ccc",
+                backgroundColor: "#D1EEEE",
                 borderRadius: 3,
                 width: 300,
                 textAlign: "center",
                 fontSize:10
-            }}>
-                {
-                    this.state.list.map((card) =>
-                        <Card key={card.id}
-                        id={card.id}
-                        note={card.note}
-                        device={card.device}
-                        app={card.app} />
-                    )
-                }
-                <Button
-                    primary
-                    content='Add note'
-                    style={{
-                        marginBottom:'10px',
-                        width:'250px',
-                        height:'40px',
-                    }}
-                    onClick={this.add}
-                />
+            }}>{element}
             </div>
         );
     }

@@ -13,9 +13,10 @@ class Card extends React.Component {
     render() {
         return (
             <div style = {{
-                backgroundColor: "whitesmoke",
+                backgroundColor: "#E0EEEE",
                 width: 300,
             }}>
+                <h2>Id: {this.state.id}</h2>
                 <h2>Noti: {this.state.note}</h2>
                 <h2>Device: {this.state.device}</h2>
                 <h2>App: {this.state.app}</h2>

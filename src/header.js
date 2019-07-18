@@ -19,6 +19,7 @@ class Header extends React.Component {
                 fontSize:'24px',
                 textAlign:'center',
                 color:'white',
+
             }}
             >FOCUS</div>
             </div>

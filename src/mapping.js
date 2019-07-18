@@ -15,7 +15,7 @@ class Mapping extends React.Component {
         return (
             <Router>
                 <div>
-                    <Route path="/" component={Header}/>
+                    <Route exact path="/" component={Header}/>
                     <Route path="/Login" component={Login}/>
                     <Route path="/Main" component={Main}/>
                 </div>

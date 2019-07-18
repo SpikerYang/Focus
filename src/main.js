@@ -9,13 +9,25 @@ class Main extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            response: 0,
+            noteId: 2,
             list: [{
-                id:1,
-                note: '123',
-                device: 'iphone4',
-                app: 'qq',
-            }]
+                'id':0,
+                'note': '123',
+                'device': 'iphone4',
+                'app': 'wx',
+                },
+                {
+                    'id':1,
+                    'note': '123',
+                    'device': 'iphone4',
+                    'app': 'email',
+                },
+                {
+                    'id':2,
+                    'note': '123',
+                    'device': 'iphone4',
+                    'app': 'qq',
+                }]
         }
         this.test = this.test.bind(this)
     }
@@ -31,41 +43,41 @@ class Main extends React.Component {
     componentDidMount() {
         console.log('DidMount')
 
-        socket.on('my response', (data) => {
-            console.log(data)
+        socket.on('add note', (data) => {
+            this.setState({noteId: this.state.noteId + 1});
+            console.log(this.state.noteId)
+            let newList = this.state.list;
+            let newCard = data;
+            newCard.id = this.state.noteId;
+            newList.push(newCard);
+            this.setState({list: newList});
+            console.log(this.state.list)
         })
 
-        console.log('emit')
-        socket.emit('test', {
-            id:1,
-            note: '123',
-            device: 'iphone4',
-            app: 'qq',
-        })
-        console.log('fasong')
+
     }
-    getNote() {
-        // let text = {userName:'1',passWord:'1'} //获取数据
-        // let send = JSON.stringify(text);   //重要！将对象转换成json字符串
-        // fetch(`http://localhost:8080/main`,{   //Fetch方法
-        //     method: 'POST',
-        //     mode:"cors",
-        //     headers: {'Content-Type': 'application/json; charset=utf-8'},
-        //     body: send
-        // }).then(res => res.json()).then(
-        //     data => {
-        //         // console.log(data.list)
-        //         // this.setState({list: data.list})
-        //         console.log(data)
-        //     }
-        // )
-    }
+
     render() {
+        let listStyle = {
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "spaceAround",
+            backgroundColor: "#D1EEEE"
+        };
+        let mainStyle = {
+
+        }
         return (
-            <div>
-            <List list = {this.state.list}/>
-            <Button onClick={this.test} /></div>
+            <div style={mainStyle}>
+            <div style={listStyle}>
+                <div><List list = {this.state.list} app='qq'/></div>
+                <div><List list = {this.state.list} app='wx'/></div>
+                <div><List list = {this.state.list} app='email'/></div>
+            </div>
+                <Button onClick={this.test} />
+            </div>
         );
     }
 }
+
 export default Main;

@@ -69,7 +69,8 @@ def test_disconnect():
 @socketio.on('test')
 def handle_my_custom_event(message):
     print('received json: ' + str(message))
-    emit('my response', message)
+    emit('add note', note)
+    print('emit')
 
 
 @app.route('/login',methods=['POST'])
@@ -330,25 +331,13 @@ if __name__ == '__main__':
             "msgId": "0"
         }
     )
-    note = [{
-                    'id':1,
+    note = {
+                    'id':0,
                     'note': '123',
                     'device': 'iphone4',
                     'app': 'qq',
-                },
-                {
-                    'id':2,
-                    'note': '12342',
-                    'device': 'iphone3',
-                    'app': 'wc',
-                },
-                {
-                    'id':3,
-                    'note': '123132',
-                    'device': 'iphone6',
-                    'app': 'qq',
                 }
-               ]
+               
     print('Notification is %s ', Notification)
     print(note)
     socketio.run(app, port=8080, debug=True)

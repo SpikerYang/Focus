@@ -3,13 +3,20 @@ from flask import Flask, request,jsonify
 from flask_socketio import SocketIO, emit
 import time
 import string
+import itchat
+import requests, json
+import re
+import math
+import random
+from wxbot import WxBot 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
 
-global Notification,KeyList,Valid
+global Notification,KeyList,Valid, loginStatus
+# global uuid, base_request, base_url, pass_ticket, user, sync_key_dic
 ###########A list of dictionary, store cookie, messageId, App Icon, timeStamp, message###############
 ############status:0--new coming 1--have sent to web 2--have been read by user###############
 Notification = []
@@ -24,8 +31,9 @@ UserList = []
 KeyList = []
 #### dictionary, store UserName, list of devices
 #DeviceList = {}
-
+now = 1
 MESSAGEID = 1
+uuid = ''
 
 # def login_ldap(username, password):
 #  try:
@@ -66,12 +74,146 @@ def test_connect():
 def test_disconnect():
     print('Client disconnected')
 
-@socketio.on('test')
-def handle_my_custom_event(message):
-    print('received json: ' + str(message))
-    emit('add note', note)
-    print('emit')
+@socketio.on('wxLogin')
+def get_qrCode(message):
+    global myBot 
+    myBot = WxBot()
+    print("[*] 微信机器人开启...")
+    print("[*] 正在获取UUID...")
+    get_uid_result = myBot._get_uid()
+    if get_uid_result:
+            print("[*] 请扫描下方的二维码")
+            url = myBot._get_qr()
+            emit('get qrCode', url)
+            print('send qrcode')
+            # myBot._wait_login()
+            # myBot._init_wx()
+            # myBot._status_notify()
+    else:
+            print('[*] 获取UUID失败')
+            exit()
+    # print('wxLogin start' )
+    # # get uuid
+    # uuid_url = 'https://login.wx.qq.com/jslogin?appid=%s&fun=new&lang=%s&_=%s' % ('wx782c26e4c19acffb', 'zh_CN', int(time.time()*1000))
+    # uid_info = requests.get(uuid_url)
+    # if uid_info.status_code == 200:
+    #    uid_detail = re.match(r'window.QRLogin.code = (.*); window.QRLogin.uuid = "(.*)";', uid_info.text, re.M | re.I)
+    #    if uid_detail.group(1) == '200':
+    #      global uuid 
+    #      uuid = str(uid_detail.group(2))
+    # print('uuid:' + uuid);
+    # # send qrCode
+    # emit('get qrCode', 'https://login.weixin.qq.com/l/' + uuid)
+    # print('emit')
 
+@socketio.on('gotQrcode')
+def wx_init():
+    global myBot
+    myBot._wait_login()
+    myBot._init_wx()
+    myBot._status_notify()
+    myBot._wx_contact()
+    print('wx start') 
+    print(myBot.user)
+    print(myBot.friends)
+    s = '此消息来自微信机器人'
+    i = '哒哒'
+    print(myBot._get_username_by_nickname(i))
+    myBot._send_message(s,i)
+    # print('wx init login')
+    # global loginStatus
+    # t = 0
+    # loginStatus = False
+    # while t < 10:
+    #   login_url = 'https://login.wx.qq.com/cgi-bin/mmwebwx-bin/login?loginicon=true&uuid=%s&tip=%s' % (uuid, '0')
+    #   login_info = requests.get(login_url)    
+    #   login_detail = re.search(r'window.code=(\d+?);', login_info.text) 
+    #   if login_detail.group(1) == '408':
+    #      t += 1
+    #      time.sleep(1)
+    #      print('[*] 系统正在等待你扫码....')
+    #   elif login_detail.group(1) == '201':
+    #      t += 1
+    #      time.sleep(1)
+    #      print('[*] 请在手机上确认登录')
+    #   elif login_detail.group(1) == '200':
+    #      print('login suc')
+    #     # login succeeded
+    #      new_url_info = re.search(r'window.redirect_uri="(\S+?)";', login_info.text)
+    #      new_url = new_url_info.group(1)
+    #      global base_url
+    #      base_url = new_url_info.group(1)[:new_url_info.group(1).rfind('/')]
+    #      important_info = requests.get(new_url, allow_redirects=False).text
+    #      print(new_url)
+    #      # get key
+    #      print(re.search(r'<wxsid>(\S+?)</wxsid>', important_info))
+    #      wei_xin_sid = str(re.search(r'<wxsid>(\S+?)</wxsid>', important_info).group(1))
+    #      s_key = str(re.search(r'<skey>(\S+?)</skey>', important_info).group(1))
+    #      wei_xin_uin = int(re.search(r'<wxuin>(\S+?)</wxuin>', important_info).group(1))
+    #      global pass_ticket
+    #      pass_ticket = str(re.search(r'<pass_ticket>(\S+?)</pass_ticket>', important_info).group(1))
+    #      device_id = 'e' + repr(random.random())[2:17]
+    #      description = \
+    #                     '======Login Success======\n'\
+    #                     '[#] Web WeiXin\n'\
+    #                     '[#] Uuid: %s\n'\
+    #                     '[#] Uin: %i\n'\
+    #                     '[#] DeviceID: %s\n'\
+    #                     '[#] Sid: %s\n'\
+    #                     '[#] s_key: %s\n'\
+    #                     '[#] PassTicket: %s\n'\
+    #                     '=========================' % \
+    #                     (uuid, wei_xin_uin, device_id, wei_xin_sid, s_key, pass_ticket)
+    #      print(description) 
+    #      global base_request
+    #      base_request = {
+    #                     'Uin:': wei_xin_uin,
+    #                     'Sid': wei_xin_sid,
+    #                     'Skey': s_key,
+    #                     'DeviceID': device_id
+    #                 }
+    #      loginStatus = True
+    #      # get userinfo
+    #      init_url = base_url + '/webwxinit?r=%i&pass_ticket=%s' % (int(repr(random.random())[2:12]), pass_ticket)
+    #      params = {
+    #         'BaseRequest': base_request
+    #      }
+    #      res = requests.post(init_url, json.dumps(params,ensure_ascii=False))
+    #      res.encoding = 'utf-8'
+
+    #      dic = res.json()
+    #      print(dic)
+    #      global user, sync_key_dic
+    #      user = dic['User']
+    #      sync_key_dic = dic['SyncKey']
+    #      print (user)
+    #      print(sync_key_dic)
+    #      break
+    # if (loginStatus == False): 
+    #    print('login failed')
+
+# @socketio.on('sendMsg')
+# def send_msg():
+#   global loginStatus, base_request, base_url, pass_ticket, user
+#   if (loginStatus == True): 
+#        url = base_url + '/webwxsendmsg?pass_ticket=' + pass_ticket
+#        only_id = repr(int(time.time())) + repr(random.random()[2:9])
+#        params = {
+#             'BaseRequest': base_request,
+#             'Msg': {
+#                 'Type': 1,
+#                 'Content': 'hello！ （此消息来自微信机器人）',
+#                 'FromUserName': user.UserName,
+#                 'ToUserName': 'filehelper',
+#                 'LocalID': only_id,
+#                 'ClientMsgId': only_id,
+#             },
+#             'Scene': 0
+#         }
+#         dic = requests.post(url, json.dumps(params))
+#         if dic['BaseResponse']['Ret'] == 0:
+#            print('send msg 成功]' )
+#   else print ('please login')
 
 @app.route('/login',methods=['POST'])
 def webLogin():
@@ -130,7 +272,7 @@ def registerD():
          }
        )
       i = len(AccountList)
-
+      print(AccountList)
       return jsonify({'Status': Valid, 'Cookie': AccountList[i-1]})
     else:
       return jsonify({'Status': Valid, 'Cookie': []})
@@ -211,16 +353,22 @@ def clearMessageStatus():
 
 
 
+
+def noti_update(data):
+  socketio.emit('add note', data);
+  print('new note emit')
+
 ## device post notification to server.
   ##         'icon': request.json['icon'],
-
 @app.route('/postnotification',methods=['POST'])
 def AddNotify():
     global MESSAGEID
     msgid = str(MESSAGEID)
     if not request.json:
       abort(400)
-    Notification.insert(0,
+    
+    if (request.json['tickerText'] != ''):
+      Notification.insert(0,
             {
                 'deviceId': request.json['deviceId'],
                 'app': request.json['app'],
@@ -237,10 +385,25 @@ def AddNotify():
                 'msgId' : msgid
                 }
         )
+    if (request.json['app'] == 'com.tencent.mm'):
+      noti_app = 'wx'
+    if (request.json['app'] == 'com.tencent.mobileqq'):
+      noti_app = 'qq'
+
+    data = {
+                'id': 0,
+                'note': request.json['tickerText'],
+                'device': request.json['deviceId'],
+                'app': noti_app,
+                'title': request.json['title']
+    }
+    print(data)
+    socketio.start_background_task(target=noti_update(data))
+    print('noti_update start')
     #print(KeyList)
 
     MESSAGEID = MESSAGEID + 1
-    print('MESSAGEID is %s', MESSAGEID)
+    print(Notification)
     ReKeyList = []
     for i in range(0, len(KeyList)):
       ReKeyList.append(KeyList[i])
@@ -314,23 +477,7 @@ if __name__ == '__main__':
     )
     print('AccountList is %s ',AccountList)
 ##    "icon": "",
-    Notification.append(
-        {
-            "deviceId": "9997",
-            "app": "com.tencent.mm",
-            "tickerText": "This is a new message from QQ",
-            "title": "Title",
-            "subText": "subText",
-            "bigText": "bigText",
-            "text": "This is a message",
-            "subText": "",
-            "key": "",
-            "postTime": "",
-            "cookie": "99971558943267.2937844",
-            "status": 0,
-            "msgId": "0"
-        }
-    )
+    
     note = {
                     'id':0,
                     'note': '123',
@@ -338,7 +485,9 @@ if __name__ == '__main__':
                     'app': 'qq',
                 }
                
-    print('Notification is %s ', Notification)
+    # print('Notification is %s ', Notification)
     print(note)
-    socketio.run(app, port=8080, debug=True)
+    
+
+    socketio.run(app, host='0.0.0.0', port=8080, debug=True)
 

@@ -20,7 +20,8 @@ class List extends React.Component {
                                     id={card.id}
                                     note={card.note}
                                     device={card.device}
-                                    app={card.app} />)
+                                    app={card.app}
+                                    title={card.title}/>)
                 }
             }
         );

@@ -8,7 +8,8 @@ class List extends React.Component {
         super(props);
         this.state = {
             appLimit: this.props.app,
-            list: this.props.list
+            list: this.props.list,
+            socket: this.props.socket
         }
     }
 
@@ -21,7 +22,8 @@ class List extends React.Component {
                                     note={card.note}
                                     device={card.device}
                                     app={card.app}
-                                    title={card.title}/>)
+                                    title={card.title}
+                                    socket={this.state.socket}/>)
                 }
             }
         );

@@ -116,105 +116,24 @@ def wx_init():
     print('wx start') 
     print(myBot.user)
     print(myBot.friends)
-    s = '此消息来自微信机器人'
-    i = '哒哒'
+    # s = '此消息来自微信机器人'
+    # i = '哒哒'
+    # print(myBot._get_username_by_nickname(i))
+    # myBot._send_message(s,i)
+    
+@socketio.on('sendMsg')
+def wx_init(json):
+    global myBot
+    print(json)
+    
+    s = json["text"]
+    i = json["toWho"]
+    print(i)
     print(myBot._get_username_by_nickname(i))
     myBot._send_message(s,i)
-    # print('wx init login')
-    # global loginStatus
-    # t = 0
-    # loginStatus = False
-    # while t < 10:
-    #   login_url = 'https://login.wx.qq.com/cgi-bin/mmwebwx-bin/login?loginicon=true&uuid=%s&tip=%s' % (uuid, '0')
-    #   login_info = requests.get(login_url)    
-    #   login_detail = re.search(r'window.code=(\d+?);', login_info.text) 
-    #   if login_detail.group(1) == '408':
-    #      t += 1
-    #      time.sleep(1)
-    #      print('[*] 系统正在等待你扫码....')
-    #   elif login_detail.group(1) == '201':
-    #      t += 1
-    #      time.sleep(1)
-    #      print('[*] 请在手机上确认登录')
-    #   elif login_detail.group(1) == '200':
-    #      print('login suc')
-    #     # login succeeded
-    #      new_url_info = re.search(r'window.redirect_uri="(\S+?)";', login_info.text)
-    #      new_url = new_url_info.group(1)
-    #      global base_url
-    #      base_url = new_url_info.group(1)[:new_url_info.group(1).rfind('/')]
-    #      important_info = requests.get(new_url, allow_redirects=False).text
-    #      print(new_url)
-    #      # get key
-    #      print(re.search(r'<wxsid>(\S+?)</wxsid>', important_info))
-    #      wei_xin_sid = str(re.search(r'<wxsid>(\S+?)</wxsid>', important_info).group(1))
-    #      s_key = str(re.search(r'<skey>(\S+?)</skey>', important_info).group(1))
-    #      wei_xin_uin = int(re.search(r'<wxuin>(\S+?)</wxuin>', important_info).group(1))
-    #      global pass_ticket
-    #      pass_ticket = str(re.search(r'<pass_ticket>(\S+?)</pass_ticket>', important_info).group(1))
-    #      device_id = 'e' + repr(random.random())[2:17]
-    #      description = \
-    #                     '======Login Success======\n'\
-    #                     '[#] Web WeiXin\n'\
-    #                     '[#] Uuid: %s\n'\
-    #                     '[#] Uin: %i\n'\
-    #                     '[#] DeviceID: %s\n'\
-    #                     '[#] Sid: %s\n'\
-    #                     '[#] s_key: %s\n'\
-    #                     '[#] PassTicket: %s\n'\
-    #                     '=========================' % \
-    #                     (uuid, wei_xin_uin, device_id, wei_xin_sid, s_key, pass_ticket)
-    #      print(description) 
-    #      global base_request
-    #      base_request = {
-    #                     'Uin:': wei_xin_uin,
-    #                     'Sid': wei_xin_sid,
-    #                     'Skey': s_key,
-    #                     'DeviceID': device_id
-    #                 }
-    #      loginStatus = True
-    #      # get userinfo
-    #      init_url = base_url + '/webwxinit?r=%i&pass_ticket=%s' % (int(repr(random.random())[2:12]), pass_ticket)
-    #      params = {
-    #         'BaseRequest': base_request
-    #      }
-    #      res = requests.post(init_url, json.dumps(params,ensure_ascii=False))
-    #      res.encoding = 'utf-8'
-
-    #      dic = res.json()
-    #      print(dic)
-    #      global user, sync_key_dic
-    #      user = dic['User']
-    #      sync_key_dic = dic['SyncKey']
-    #      print (user)
-    #      print(sync_key_dic)
-    #      break
-    # if (loginStatus == False): 
-    #    print('login failed')
-
-# @socketio.on('sendMsg')
-# def send_msg():
-#   global loginStatus, base_request, base_url, pass_ticket, user
-#   if (loginStatus == True): 
-#        url = base_url + '/webwxsendmsg?pass_ticket=' + pass_ticket
-#        only_id = repr(int(time.time())) + repr(random.random()[2:9])
-#        params = {
-#             'BaseRequest': base_request,
-#             'Msg': {
-#                 'Type': 1,
-#                 'Content': 'hello！ （此消息来自微信机器人）',
-#                 'FromUserName': user.UserName,
-#                 'ToUserName': 'filehelper',
-#                 'LocalID': only_id,
-#                 'ClientMsgId': only_id,
-#             },
-#             'Scene': 0
-#         }
-#         dic = requests.post(url, json.dumps(params))
-#         if dic['BaseResponse']['Ret'] == 0:
-#            print('send msg 成功]' )
-#   else print ('please login')
-
+    emit('Message send', 1)
+    print('emit msg send')
+    
 @app.route('/login',methods=['POST'])
 def webLogin():
     print("start login")

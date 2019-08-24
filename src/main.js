@@ -4,44 +4,46 @@ import io from 'socket.io-client'
 import {Button} from "semantic-ui-react";
 import QRCode from 'qrcode-react'
 
+
 const socket = io('http://localhost:8080')
 class Main extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            socket: socket,
             qrCodeUrl: '',
             noteId: 2,
             list: [{
                 'id':0,
-                'note': '123',
+                'note': '菜菜:123',
                 'device': 'iphone4',
                 'app': 'wx',
                 'title': 'sss',
                 },
                 {
                     'id':1,
-                    'note': 'xxx',
+                    'note': 'x:xxx',
                     'device': 'iphone4',
                     'app': 'wx',
                     'title': 'sss',
                 },
                 {
                     'id':2,
-                    'note': '567',
+                    'note': '3:567',
                     'device': 'iphone4',
                     'app': 'wx',
                     'title': 'sss',
                 },
                 {
                     'id':3,
-                    'note': 'iju',
+                    'note': '234:iju',
                     'device': 'iphone4',
                     'app': 'email',
                     'title': 'sss',
                 },
                 {
                     'id':4,
-                    'note': '123',
+                    'note': '13:123',
                     'device': 'iphone4',
                     'app': 'qq',
                     'title': 'sss',
@@ -79,7 +81,11 @@ class Main extends React.Component {
             socket.emit('gotQrcode');
         })
         console.log('qeCode listening')
-
+        socket.on('Message send', (data) => {
+            console.log('sent listen');
+            if (data === 1) window.alert('Message sent!')
+            console.log('mes send');
+        })
 
     }
 
@@ -96,9 +102,9 @@ class Main extends React.Component {
         return (
             <div style={mainStyle}>
             <div style={listStyle}>
-                <div><List list = {this.state.list} app='qq'/></div>
-                <div><List list = {this.state.list} app='wx'/></div>
-                <div><List list = {this.state.list} app='email'/></div>
+                <div><List list = {this.state.list} socket = {this.state.socket}  app='qq'/></div>
+                <div><List list = {this.state.list} socket = {this.state.socket} app='wx'/></div>
+                <div><List list = {this.state.list} socket = {this.state.socket} app='email'/></div>
             </div>
                 <Button onClick={this.test} />
                 <QRCode value={this.state.qrCodeUrl} />

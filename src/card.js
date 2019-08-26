@@ -13,6 +13,7 @@ class Card extends React.Component {
             device: props.device,
             app: props.app,
             title: props.title,
+            time: props.time,
             resState: false
         }
         this.res = this.res.bind(this);
@@ -21,23 +22,30 @@ class Card extends React.Component {
         this.setState({ resState : !this.state.resState});
     }
     render() {
+        let hStyle = {
+            width:280,
+            height: 10,
+        };
         return (
             <div style = {{
-                backgroundColor: "#E0EEEE",
-                width: 300,
+                backgroundColor: "#F0F0F0",
+                width: 280,
+                marginLeft: 10,
+                marginRight: 10,
+                marginTop: 10,
+                marginBottom: 10
             }}>
-                <h2>Id: {this.state.id}</h2>
-                <h2>Noti: {this.state.note}</h2>
-                <h2>Device: {this.state.device}</h2>
-                <h2>App: {this.state.app}</h2>
-                <h2>Title: {this.state.title}</h2>
+                <h2 style={hStyle}>Noti: {this.state.note}</h2>
+                <h2 style={hStyle}>Device: {this.state.device}</h2>
+                <h2 style={hStyle}>App: {this.state.app}</h2>
+                <h2 style={hStyle}>Time: {this.state.time}</h2>
                 <Button
                     primary
                     content='Respond on/off'
                     style={{
                         marginBottom:'10px',
                         width:'250px',
-                        height:'40px',
+                        height:'30px',
                     }}
                     onClick={this.res}
                 />

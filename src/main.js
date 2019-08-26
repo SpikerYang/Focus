@@ -12,42 +12,11 @@ class Main extends React.Component {
         this.state = {
             socket: socket,
             qrCodeUrl: '',
-            noteId: 2,
-            list: [{
-                'id':0,
-                'note': '菜菜:123',
-                'device': 'iphone4',
-                'app': 'wx',
-                'title': 'sss',
-                },
-                {
-                    'id':1,
-                    'note': 'x:xxx',
-                    'device': 'iphone4',
-                    'app': 'wx',
-                    'title': 'sss',
-                },
-                {
-                    'id':2,
-                    'note': '3:567',
-                    'device': 'iphone4',
-                    'app': 'wx',
-                    'title': 'sss',
-                },
-                {
-                    'id':3,
-                    'note': '234:iju',
-                    'device': 'iphone4',
-                    'app': 'email',
-                    'title': 'sss',
-                },
-                {
-                    'id':4,
-                    'note': '13:123',
-                    'device': 'iphone4',
-                    'app': 'qq',
-                    'title': 'sss',
-                }]
+            noteId: 0,
+            list: [
+
+                ]
+
         }
         this.test = this.test.bind(this)
     }
@@ -64,6 +33,8 @@ class Main extends React.Component {
     }
     componentDidMount() {
         console.log('DidMount')
+        socket.emit('join', sessionStorage.getItem("userName"))
+        console.log(sessionStorage.getItem("userName"))
 
         socket.on('add note', (data) => {
             this.setState({noteId: this.state.noteId + 1});
@@ -94,20 +65,32 @@ class Main extends React.Component {
             display: "flex",
             flexDirection: "row",
             justifyContent: "spaceAround",
-            backgroundColor: "#D1EEEE"
         };
         let mainStyle = {
-
-        }
+            background: `url(${"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1566814909180&di=9d313528314127e7fb902e8b372d1ae5&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F011d3859659a3fa8012193a3c20320.jpg%401280w_1l_2o_100sh.png"})`,
+            backgroundSize: "cover",
+            backgroundRepeat: "repeat",
+            height: "100%",
+            width: "100%",
+            margin: "0px",
+            padding: "0px",
+            position: "absolute",
+        };
         return (
             <div style={mainStyle}>
             <div style={listStyle}>
                 <div><List list = {this.state.list} socket = {this.state.socket}  app='qq'/></div>
                 <div><List list = {this.state.list} socket = {this.state.socket} app='wx'/></div>
                 <div><List list = {this.state.list} socket = {this.state.socket} app='email'/></div>
-            </div>
-                <Button onClick={this.test} />
+                <Button onClick={this.test} content='Login wx'
+                        style={{
+                            marginBottom:'10px',
+                            width:'250px',
+                            height:'40px',
+                        }}/><br/>
                 <QRCode value={this.state.qrCodeUrl} />
+            </div>
+
             </div>
         );
     }

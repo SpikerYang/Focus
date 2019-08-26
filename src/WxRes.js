@@ -41,14 +41,14 @@ class WxRes extends React.Component {
             this.setState({ onShow : false})
             this.setState({ text : ''})
         }
-        window.alert('please input the response!')
+        else window.alert('please input the response!')
     }
     render() {
         console.log(this.state.onShow);
         if (this.state.onShow == false) return null;
         return (
             <div>
-                <h2>{this.state.toWho}</h2>
+                <h2>To {this.state.toWho}</h2>
                 <Input
                     id='text'
                     placeholder='text'

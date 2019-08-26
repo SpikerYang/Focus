@@ -1,6 +1,8 @@
 #!/usr/bin/python3.6 
 from flask import Flask, request,jsonify
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room
+import redis
+from flask_redis import FlaskRedis
 import time
 import string
 import itchat
@@ -12,6 +14,8 @@ from wxbot import WxBot
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
+# app.config['REDIS_URL'] = "redis://:password@localhost:6379/0"
+rds = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 socketio = SocketIO(app)
 
 
@@ -35,27 +39,7 @@ now = 1
 MESSAGEID = 1
 uuid = ''
 
-# def login_ldap(username, password):
-#  try:
-#    print("start...")
-#    server = "ldap://citrite.net:389"
-#    baseDN = "dc=citrite,dc=net"
 
-#    username = "citrite\\" + username
-
-#    retrieveAttributes = None
-
-#    conn = ldap.initialize(server)
-#    conn.set_option(ldap.OPT_REFERRALS, 0)
-
-#    print(conn.simple_bind_s(username, password))
-#    print("ldap connect successfully")
-#    return 1
-
-#  except ldap.LDAPError as e:
-#    print("error")
-#    print(e)
-#    return 0
 
 def after_request(resp):
     resp.headers['Access-Control-Allow-Origin'] = '*'
@@ -70,8 +54,15 @@ app.after_request(after_request)
 def test_connect():
     print('Client connected')
 
+@socketio.on('join')
+def join(username):
+    join_room(request.sid)
+    rds.set(username, request.sid)
+    print('join')
+
 @socketio.on('disconnect')
 def test_disconnect():
+    leave_room(request.sid)
     print('Client disconnected')
 
 @socketio.on('wxLogin')
@@ -273,8 +264,10 @@ def clearMessageStatus():
 
 
 
-def noti_update(data):
-  socketio.emit('add note', data);
+def noti_update(data, userName, deviceName):
+  data['device'] = deviceName
+  print(data)
+  socketio.emit('add note', data, room = rds.get(userName));
   print('new note emit')
 
 ## device post notification to server.
@@ -314,15 +307,19 @@ def AddNotify():
                 'note': request.json['tickerText'],
                 'device': request.json['deviceId'],
                 'app': noti_app,
-                'title': request.json['title']
+                'title': request.json['title'],
+                'time': time.asctime( time.localtime(time.time()) ),
     }
-    print(data)
-    socketio.start_background_task(target=noti_update(data))
+    
+    for i in range(0, len(AccountList)):
+      #print(len(AccountList))
+      if AccountList[i]['deviceId'] == data['device']:
+         socketio.start_background_task(target=noti_update(data, AccountList[i]['userName'], AccountList[i]['deviceName'] ))
+    
     print('noti_update start')
     #print(KeyList)
 
     MESSAGEID = MESSAGEID + 1
-    print(Notification)
     ReKeyList = []
     for i in range(0, len(KeyList)):
       ReKeyList.append(KeyList[i])
@@ -379,9 +376,16 @@ if __name__ == '__main__':
 
     UserList.append(
         {
+            'userName': "yuanb",
+            'cookie': "",
+            'passWord':"123"
+        }
+    )
+    UserList.append(
+        {
             'userName': "weige",
             'cookie': "",
-            'passWord':"zjw666"
+            'passWord':"222"
         }
     )
 ############### value for testing
@@ -393,6 +397,7 @@ if __name__ == '__main__':
             'deviceName': 'Android device 1',
             'deviceIcon':'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'
         }
+        
     )
     print('AccountList is %s ',AccountList)
 ##    "icon": "",
@@ -405,8 +410,6 @@ if __name__ == '__main__':
                 }
                
     # print('Notification is %s ', Notification)
-    print(note)
-    
 
     socketio.run(app, host='0.0.0.0', port=8080, debug=True)
 
